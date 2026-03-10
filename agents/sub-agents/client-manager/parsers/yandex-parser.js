@@ -1,108 +1,165 @@
 /**
- * Парсер Яндекс Поиска
- * Ищет заказы на фриланс-биржах и форумах по поисковым запросам
- * Использует axios + cheerio для парсинга выдачи
+ * Yandex Parser - Парсинг поисковой выдачи Яндекса
+ * Сохранение результатов в parse/parse-yandex/{date}/parse_yandex_log_{date}.json
  */
 
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class YandexParser {
-  constructor() {
-    // Поисковые запросы для поиска заказов
-    this.searchQueries = [
-      'заказать сайт wordpress разработка',
-      'заказать сайт bitrix разработка',
-      'верстка сайта на заказ',
-      'разработка лендинга заказать',
-      'интернет магазин под ключ заказать',
-      'доработать сайт wordpress',
-      'доработать сайт bitrix',
-      'исправить ошибки сайта',
-      'техническая поддержка сайта',
-      'веб разработчик требуется',
-      'создать сайт с нуля заказать',
-      'интеграция bitrix wordpress'
+  constructor(options = {}) {
+    this.basePath = options.basePath || join(__dirname, '../../parse');
+    this.searchQueries = options.queries || [
+      'заказать сайт wordpress freelance',
+      'разработка сайтов битрикс фриланс',
+      'создать интернет магазин цена',
+      'верстка лендинга заказать',
+      'техническая поддержка сайта москва',
+      'ремонт сайта wordpress цена',
+      'интеграция crm сайт',
+      'доработка сайта битрикс'
     ];
     
-    // Сайты для приоритетного поиска
-    this.targetSites = [
-      'fl.ru',
-      'freelance.ru',
-      'kwork.ru',
-      'weblancer.net',
-      'freelancehunt.com',
-      'habr.com/freelance',
-      't.me',
-      'vk.com'
-    ];
-    
-    this.baseUrl = 'https://yandex.ru/search';
+    this.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
     this.results = [];
   }
 
   /**
-   * Поиск в Яндексе
+   * Получить дату в формате DD.MM.YYYY
    */
-  async search(query, limit = 10) {
-    console.log(`[Yandex] Поиск: ${query}`);
+  getDateFormatted() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+
+  /**
+   * Получить папку для даты в формате YYYY-MM-DD
+   */
+  getDateFolder() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Создать структуру папок
+   */
+  async createFolders() {
+    const dateFolder = this.getDateFolder();
+    const fullPath = join(this.basePath, 'parse-yandex', dateFolder);
+    
+    await fs.mkdir(fullPath, { recursive: true });
+    return fullPath;
+  }
+
+  /**
+   * Получить путь к файлу лога
+   */
+  getLogFilePath() {
+    const dateFormatted = this.getDateFormatted();
+    const dateFolder = this.getDateFolder();
+    return join(this.basePath, 'parse-yandex', dateFolder, `parse_yandex_log_${dateFormatted}.json`);
+  }
+
+  /**
+   * Парсинг поисковой выдачи Яндекса
+   * Примечание: Яндекс может блокировать автоматические запросы
+   */
+  async search(query, page = 0) {
+    const url = `https://yandex.ru/search/?text=${encodeURIComponent(query)}&p=${page}`;
     
     try {
-      // Эмуляция браузера
-      const response = await axios.get(this.baseUrl, {
-        params: { text: query },
+      const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': this.userAgent,
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
           'Referer': 'https://yandex.ru/'
         },
-        timeout: 10000
+        timeout: 15000,
+        maxRedirects: 5
       });
-      
+
+      // Проверка на капчу
+      if (response.data.includes('captcha') || response.data.includes('Captcha')) {
+        console.log('[YandexParser] ⚠️ Яндекс запросил капчу');
+        return [];
+      }
+
       const $ = cheerio.load(response.data);
-      const items = [];
-      
-      // Парсинг результатов поиска
-      // Яндекс использует различные классы, поэтому ищем по общим селекторам
-      $('li.serp-item, .serp-item, .organic, .SearchItem').each((i, elem) => {
-        if (items.length >= limit) return;
+      const results = [];
+
+      // Основные селекторы для органических результатов
+      const selectors = [
+        '.serp-item:not([data-cid="ads-algo"])', // Органические результаты
+        '[data-cid="organic"]',
+        '.Organic',
+        'li.serp-item'
+      ];
+
+      for (const selector of selectors) {
+        const items = $(selector);
         
-        const $elem = $(elem);
-        const titleEl = $elem.find('h2 a, .organic__title a, a.Link');
-        const linkEl = $elem.find('h2 a, .organic__url a, a.Link');
-        const descEl = $elem.find('.organic__text, .Organic-Content, .Path');
-        
-        if (titleEl.length > 0 && linkEl.length > 0) {
-          const title = titleEl.text().trim();
-          const link = linkEl.attr('href');
-          const desc = descEl.text().trim();
+        if (items.length === 0) continue;
+
+        items.each((_, item) => {
+          const $item = $(item);
           
-          // Пропускаем рекламу и Яндекс-сервисы
-          if (link && !link.includes('yandex.ru') && !link.includes('/ads/')) {
-            items.push({
-              title,
-              link: link.startsWith('http') ? link : `https://yandex.ru${link}`,
-              description: desc,
-              source: this.detectSource(link),
-              query: query,
-              foundAt: new Date().toISOString()
-            });
+          // Пропускаем рекламу
+          if ($item.attr('data-cid') === 'ads-algo' || $item.find('[data-cid="ads-algo"]').length > 0) {
+            return;
           }
-        }
-      });
-      
-      console.log(`[Yandex] Найдено результатов: ${items.length}`);
-      return items;
-      
+
+          const titleEl = $item.find('a[data-cid="title"], h2 a, a.serp-title, .OrganicTitle-LinkText');
+          const linkEl = titleEl;
+          const snippetEl = $item.find('.OrganicText, .serp-item__text, div.serp-item__text, .Path, .OrganicText-Content');
+
+          if (titleEl.length > 0) {
+            const title = titleEl.text().trim();
+            let link = linkEl.attr('href') || '';
+            const snippet = snippetEl.text().trim();
+
+            // Очистка и фильтрация ссылок
+            if (link && !link.includes('yandex.ru/direct') && !link.includes('/ads/')) {
+              // Обработка относительных ссылок
+              if (link.startsWith('/')) {
+                link = 'https://yandex.ru' + link;
+              } else if (!link.startsWith('http')) {
+                link = 'https://' + link;
+              }
+
+              results.push({
+                title,
+                url: link,
+                snippet,
+                position: results.length + 1
+              });
+            }
+          }
+        });
+
+        if (results.length > 0) break;
+      }
+
+      return results;
+
     } catch (error) {
-      console.error(`[Yandex] Ошибка поиска "${query}":`, error.message);
+      console.error(`[YandexParser] Ошибка поиска "${query}":`, error.message);
       
-      // Если Яндекс блокирует, возвращаем заглушку
-      if (error.code === 'ERR_BAD_REQUEST' || error.response?.status === 429) {
-        console.log('[Yandex] Возможно, Яндекс блокирует запросы. Попробуйте позже.');
+      if (error.response?.status === 429) {
+        console.log('[YandexParser] Слишком много запросов, блокировка Яндексом');
+      } else if (error.response?.status === 403) {
+        console.log('[YandexParser] Доступ запрещён (403)');
       }
       
       return [];
@@ -110,163 +167,180 @@ export class YandexParser {
   }
 
   /**
-   * Определение источника (биржа, канал и т.д.)
-   */
-  detectSource(url) {
-    if (!url) return 'unknown';
-    
-    const urlLower = url.toLowerCase();
-    
-    for (const site of this.targetSites) {
-      if (urlLower.includes(site)) {
-        return site;
-      }
-    }
-    
-    if (urlLower.includes('freelance')) return 'freelance-site';
-    if (urlLower.includes('telegram')) return 'telegram';
-    if (urlLower.includes('vk.com')) return 'vk';
-    if (urlLower.includes('habr')) return 'habr';
-    
-    return 'other';
-  }
-
-  /**
    * Парсинг по всем запросам
    */
-  async parseAllQueries(resultsPerQuery = 5) {
-    console.log('\n╔════════════════════════════════════════════════╗');
-    console.log('║     Яндекс Парсер - Поиск заказов             ║');
-    console.log('╚════════════════════════════════════════════════╝\n');
+  async parseAllQueries() {
+    console.log('[YandexParser] Начало парсинга Яндекса...');
+    console.log(`[YandexParser] Запросов: ${this.searchQueries.length}`);
     
     const allResults = [];
     
-    for (const query of this.searchQueries) {
-      const results = await this.search(query, resultsPerQuery);
-      allResults.push(...results);
+    for (let i = 0; i < this.searchQueries.length; i++) {
+      const query = this.searchQueries[i];
+      console.log(`\n[${i + 1}/${this.searchQueries.length}] Поиск: ${query}`);
       
-      // Задержка между запросами
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+      const results = await this.search(query);
+      console.log(`   Найдено результатов: ${results.length}`);
+      
+      if (results.length > 0) {
+        allResults.push({
+          query,
+          results,
+          parsedAt: new Date().toISOString()
+        });
+      }
+      
+      // Задержка между запросами (1-3 секунды)
+      const delay = Math.floor(Math.random() * 2000) + 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
     
-    // Удаление дубликатов
-    const uniqueResults = this.removeDuplicates(allResults);
+    console.log(`\n[YandexParser] Всего найдено: ${allResults.length} запросов с результатами`);
+    return allResults;
+  }
+
+  /**
+   * Сохранение результатов в JSON
+   */
+  async saveResults(results) {
+    const folderPath = await this.createFolders();
+    const logFilePath = this.getLogFilePath();
     
-    console.log(`\n📊 Всего найдено: ${uniqueResults.length} заказов`);
-    return uniqueResults;
-  }
-
-  /**
-   * Удаление дубликатов по URL
-   */
-  removeDuplicates(results) {
-    const seen = new Set();
-    return results.filter(item => {
-      if (seen.has(item.link)) return false;
-      seen.add(item.link);
-      return true;
-    });
-  }
-
-  /**
-   * Фильтрация по релевантности
-   */
-  filterRelevant(results) {
-    const relevantKeywords = [
-      'заказать', 'разработка', 'создать', 'требуется',
-      'нужен', 'ищу', 'предложение', 'проект',
-      'wordpress', 'bitrix', 'верстка', 'сайт',
-      'лендинг', 'интернет-магазин', 'cms'
-    ];
+    const logData = {
+      parsedAt: new Date().toISOString(),
+      date: this.getDateFormatted(),
+      queriesCount: results.length,
+      totalResults: results.reduce((sum, r) => sum + r.results.length, 0),
+      searchQueries: this.searchQueries,
+      results: results
+    };
     
-    return results.filter(item => {
-      const text = (item.title + ' ' + item.description).toLowerCase();
-      return relevantKeywords.some(keyword => text.includes(keyword));
-    });
+    await fs.writeFile(logFilePath, JSON.stringify(logData, null, 2), 'utf-8');
+    console.log(`[YandexParser] Результаты сохранены: ${logFilePath}`);
+    
+    this.results = logData;
+    return logData;
   }
 
   /**
-   * Вывод результатов на экран
+   * Загрузить предыдущие результаты
    */
-  displayResults(results) {
-    console.log('\n' + '═'.repeat(60));
-    console.log('           НАЙДЕННЫЕ ЗАКАЗЫ');
-    console.log('═'.repeat(60) + '\n');
+  async loadPreviousResults() {
+    const logFilePath = this.getLogFilePath();
+    
+    try {
+      const data = await fs.readFile(logFilePath, 'utf-8');
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Получить статистику результатов
+   */
+  getStats(logData) {
+    const data = logData || this.results;
+    
+    if (!data || !data.results) {
+      return {
+        queriesCount: 0,
+        totalResults: 0,
+        avgResultsPerQuery: 0
+      };
+    }
+    
+    const totalResults = data.results.reduce((sum, r) => sum + r.results.length, 0);
+    
+    return {
+      date: data.date,
+      queriesCount: data.queriesCount,
+      totalResults,
+      avgResultsPerQuery: data.queriesCount > 0 ? (totalResults / data.queriesCount).toFixed(1) : 0,
+      queries: data.results.map(r => ({
+        query: r.query,
+        count: r.results.length
+      }))
+    };
+  }
+
+  /**
+   * Парсинг и сохранение
+   */
+  async parseAndSave() {
+    const results = await this.parseAllQueries();
     
     if (results.length === 0) {
-      console.log('❌ Ничего не найдено\n');
+      console.log('[YandexParser] Результаты не найдены');
+      return null;
+    }
+    
+    const logData = await this.saveResults(results);
+    
+    // Статистика
+    const stats = this.getStats(logData);
+    console.log('\n[YandexParser] Статистика:');
+    console.log(`   Дата: ${stats.date}`);
+    console.log(`   Запросов: ${stats.queriesCount}`);
+    console.log(`   Всего результатов: ${stats.totalResults}`);
+    console.log(`   В среднем на запрос: ${stats.avgResultsPerQuery}`);
+    
+    return logData;
+  }
+
+  /**
+   * Экспорт в таблицу
+   */
+  toTable(logData) {
+    const data = logData || this.results;
+    
+    if (!data || !data.results) {
+      return [];
+    }
+    
+    const table = [];
+    
+    for (const queryData of data.results) {
+      for (const result of queryData.results) {
+        table.push({
+          query: queryData.query,
+          position: result.position,
+          title: result.title.substring(0, 60),
+          url: result.url,
+          snippet: result.snippet?.substring(0, 100) || ''
+        });
+      }
+    }
+    
+    return table;
+  }
+
+  /**
+   * Вывод таблицы в консоль
+   */
+  printTable(logData) {
+    const table = this.toTable(logData);
+    
+    if (table.length === 0) {
+      console.log('Нет данных для отображения');
       return;
     }
     
-    // Группировка по источникам
-    const grouped = {};
-    for (const result of results) {
-      const source = result.source || 'other';
-      if (!grouped[source]) grouped[source] = [];
-      grouped[source].push(result);
+    console.log(`\n┌─────────┬──────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────┐`);
+    console.log(`│ Запрос  │ Заголовок                                                    │ URL                                             │`);
+    console.log(`├─────────┼──────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────┤`);
+    
+    table.slice(0, 20).forEach(row => {
+      const title = row.title.length > 60 ? row.title.substring(0, 57) + '...' : row.title;
+      const url = row.url.length > 47 ? row.url.substring(0, 44) + '...' : row.url;
+      console.log(`│ ${row.query.substring(0, 7).padEnd(7)} │ ${title.padEnd(60)} │ ${url.padEnd(47)} │`);
+    });
+    
+    if (table.length > 20) {
+      console.log(`│ ... и ещё ${table.length - 20} результатов │`);
     }
     
-    // Вывод по группам
-    for (const [source, items] of Object.entries(grouped)) {
-      console.log(`\n📌 ${source.toUpperCase()} (${items.length})`);
-      console.log('─'.repeat(60));
-      
-      items.forEach((item, index) => {
-        console.log(`\n[${index + 1}] ${item.title}`);
-        console.log(`    🔗 ${item.link}`);
-        if (item.description) {
-          const shortDesc = item.description.substring(0, 150);
-          console.log(`    📝 ${shortDesc}${item.description.length > 150 ? '...' : ''}`);
-        }
-        console.log(`    🕐 ${new Date(item.foundAt).toLocaleString('ru-RU')}`);
-      });
-    }
-    
-    console.log('\n' + '═'.repeat(60));
-    console.log(`ВСЕГО: ${results.length} заказов`);
-    console.log('═'.repeat(60) + '\n');
-  }
-
-  /**
-   * Сохранение результатов в файл
-   */
-  async saveResults(results, outputPath = './parsed_output/yandex_results.json') {
-    await fs.mkdir(join(outputPath, '..'), { recursive: true });
-    await fs.writeFile(outputPath, JSON.stringify(results, null, 2), 'utf-8');
-    console.log(`💾 Результаты сохранены: ${outputPath}`);
-  }
-
-  /**
-   * Генерация отчёта в Markdown
-   */
-  async generateMarkdownReport(results, outputPath = './parsed_output/yandex_report.md') {
-    let report = `# Отчёт по поиску заказов\n\n`;
-    report += `**Дата:** ${new Date().toLocaleString('ru-RU')}\n`;
-    report += `**Всего найдено:** ${results.length}\n\n`;
-    report += `---\n\n`;
-    
-    // Группировка
-    const grouped = {};
-    for (const result of results) {
-      const source = result.source || 'other';
-      if (!grouped[source]) grouped[source] = [];
-      grouped[source].push(result);
-    }
-    
-    for (const [source, items] of Object.entries(grouped)) {
-      report += `## ${source.toUpperCase()} (${items.length})\n\n`;
-      
-      items.forEach((item, index) => {
-        report += `### ${index + 1}. ${item.title}\n\n`;
-        report += `- **Ссылка:** ${item.link}\n`;
-        report += `- **Описание:** ${item.description || 'Нет описания'}\n`;
-        report += `- **Найдено:** ${new Date(item.foundAt).toLocaleString('ru-RU')}\n\n`;
-        report += `---\n\n`;
-      });
-    }
-    
-    await fs.writeFile(outputPath, report, 'utf-8');
-    console.log(`📄 Markdown отчёт: ${outputPath}`);
+    console.log(`└─────────┴──────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────┘`);
   }
 }
 

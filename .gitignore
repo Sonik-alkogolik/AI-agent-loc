@@ -12,3 +12,4 @@ sessions/
 *.session.json
 parsed_output/
 test-bot.js
+parse/

@@ -10,6 +10,7 @@
     "client-manager": "node test-client-manager.js",
     "parse-leads": "node agents/sub-agents/client-manager/parse-leads.js",
     "parse-telegram": "node agents/sub-agents/client-manager/parse-telegram.js",
+    "parse-yandex": "node agents/sub-agents/client-manager/parse-yandex.js",
     "crm": "node agents/sub-agents/client-manager/crm.js",
     "search": "node agents/sub-agents/client-manager/search-demo.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
