@@ -1,8 +1,9 @@
-feat: Orders Manager + Telegram Bot Parser
+feat: Yandex Parser с логированием результатов
 
-- Добавлен OrdersManager для хранения заказов в parse_order_{date}/{id}.json
-- Создана CRM-таблица для просмотра и управления заказами
-- Добавлен Telegram Bot Parser (парсинг через бота, не MTProto)
-- Обновлён ClientManagerAgent с интеграцией OrdersManager
-- Добавлены команды: npm run parse-leads, npm run crm, npm run parse-telegram
-- Документация: ORDERS.md, TELEGRAM_BOT.md
+- Добавлен YandexParser для парсинга поисковой выдачи
+- Структура: parse/parse-yandex/{date}/parse_yandex_log_{date}.json
+- Скрипт parse-yandex.js для запуска парсинга
+- 12 поисковых запросов для поиска клиентов
+- Тестовый скрипт test-yandex.js для отладки
+- Документация: YANDEX_PARSER.md
+- Обновлены селекторы для лучшей совместимости
