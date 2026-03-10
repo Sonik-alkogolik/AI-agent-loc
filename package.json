@@ -1,0 +1,25 @@
+{
+  "name": "ai-agent-loc",
+  "version": "1.0.0",
+  "description": "Иерархическая система AI-агентов с Senior Agent во главе",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "senior": "node agents/senior-agent/agent.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "hierarchy",
+    "multi-agent",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {}
+}

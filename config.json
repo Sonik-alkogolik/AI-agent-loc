@@ -1,0 +1,35 @@
+{
+  "seniorAgent": {
+    "name": "Senior Agent",
+    "role": "orchestrator",
+    "description": "Главный AI-агент, координирующий работу sub-агентов",
+    "capabilities": [
+      "task_decomposition",
+      "agent_coordination",
+      "result_aggregation",
+      "knowledge_management"
+    ]
+  },
+  "subAgents": {
+    "basePath": "./agents/sub-agents",
+    "baseMDPath": "./BaseMD",
+    "autoCreate": true
+  },
+  "communication": {
+    "protocol": "message-queue",
+    "timeout": 30000,
+    "retryAttempts": 3
+  },
+  "knowledgeBase": {
+    "enabled": true,
+    "structure": {
+      "context": "Контекстные файлы для понимания задач",
+      "tasks": "История выполненных задач и результаты",
+      "memory": "Долговременная память агента"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "path": "./logs"
+  }
+}

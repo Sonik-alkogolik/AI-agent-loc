@@ -1,0 +1,17 @@
+{
+  "id": "agent-1",
+  "name": "General Purpose Agent",
+  "type": "general",
+  "description": "Агент общего назначения для выполнения различных задач",
+  "version": "1.0.0",
+  "capabilities": [
+    "code_generation",
+    "text_processing",
+    "data_analysis"
+  ],
+  "settings": {
+    "maxTaskTime": 60000,
+    "retryAttempts": 3,
+    "logLevel": "info"
+  }
+}

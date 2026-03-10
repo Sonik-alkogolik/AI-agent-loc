@@ -1,0 +1,9 @@
+node_modules/
+logs/*.log
+*.log
+.env
+.DS_Store
+BaseMD/**/*.md
+!BaseMD/.gitkeep
+dist/
+build/
