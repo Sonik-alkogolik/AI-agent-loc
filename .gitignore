@@ -5,5 +5,10 @@ logs/*.log
 .DS_Store
 BaseMD/**/*.md
 !BaseMD/.gitkeep
+BaseMD/orders/
 dist/
 build/
+sessions/
+*.session.json
+parsed_output/
+test-bot.js

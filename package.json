@@ -7,6 +7,11 @@
   "scripts": {
     "start": "node src/index.js",
     "senior": "node agents/senior-agent/agent.js",
+    "client-manager": "node test-client-manager.js",
+    "parse-leads": "node agents/sub-agents/client-manager/parse-leads.js",
+    "parse-telegram": "node agents/sub-agents/client-manager/parse-telegram.js",
+    "crm": "node agents/sub-agents/client-manager/crm.js",
+    "search": "node agents/sub-agents/client-manager/search-demo.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
@@ -19,7 +24,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.13.6",
+    "cheerio": "^1.2.0",
+    "dotenv": "^16.6.1",
+    "telegram": "^2.26.22",
     "uuid": "^9.0.0"
-  },
-  "devDependencies": {}
+  }
 }

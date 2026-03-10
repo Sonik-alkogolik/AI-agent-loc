@@ -1,0 +1,16 @@
+# Чувствительные данные
+.env
+
+# Сессии
+sessions/
+*.session.json
+
+# Результаты парсинга
+parsed_output/
+
+# Логи
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,52 @@
+{
+  "clients": [
+    {
+      "id": "client-1773158544148",
+      "name": "Иван Петров",
+      "contact": {
+        "telegram": "@ivan_p",
+        "email": "ivan@example.com"
+      },
+      "source": "fl.ru",
+      "projectType": "wordpress",
+      "description": "Нужно сделать сайт для компании по продаже оборудования",
+      "status": "proposal_sent",
+      "createdAt": "2026-03-10T16:02:24.148Z",
+      "updatedAt": "2026-03-10T16:02:24.164Z",
+      "followUpDate": "2026-03-13T16:02:24.164Z",
+      "proposalData": {
+        "generatedAt": "2026-03-10T16:02:24.159Z",
+        "template": "proposal-wordpress.md",
+        "content": "# Коммерческое предложение — WordPress проект\n\nЗдравствуйте, Иван Петров!\n\nМеня зовут Дмитрий, я web-разработчик со специализацией на CMS WordPress.\n\n## Моё предложение\n\nГотов взяться за ваш проект по WordPress. Имею большой опыт работы с этой CMS:\n- Установка и настройка WordPress\n- Разработка тем и плагинов\n- Интеграция вёрстки на WordPress\n- Оптимизация скорости загрузки\n- Исправление ошибок и багов\n\n## Мои навыки\n\n- **CMS:** WordPress (основная специализация)\n- **Frontend:** HTML5, CSS3 (SCSS), JavaScript (jQuery)\n- **Backend:** PHP\n- **Дополнительно:** Git, базовое SEO, оптимизация скорости\n\n## Условия\n\n- **Ставка:** 500₽/час\n- **Сроки:** Обсуждаются индивидуально после оценки задачи\n- **Портфолио:** Готов предоставить примеры работ по запросу\n\n## Следующие шаги\n\nГотов обсудить детали вашего проекта и оценить сроки выполнения. Напишите мне в Telegram — обсудим все нюансы!\n\n**Контакты:**  \nTelegram: https://t.me/vveb_front\n\n---\n\nГотов обсудить ваш проект и буду рад сотрудничеству!\n"
+      }
+    },
+    {
+      "id": "client-1773158544151",
+      "name": "ООО \"ТехСтрой\"",
+      "contact": {
+        "email": "info@techstroy.ru"
+      },
+      "source": "telegram",
+      "projectType": "bitrix",
+      "description": "Требуется доработка существующего сайта на Bitrix",
+      "status": "lead",
+      "createdAt": "2026-03-10T16:02:24.151Z",
+      "updatedAt": "2026-03-10T16:02:24.151Z",
+      "followUpDate": null,
+      "proposalData": null
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-03-10T00:00:00.000Z",
+    "updatedAt": "2026-03-10T16:02:24.164Z",
+    "version": "1.0.0"
+  },
+  "statuses": {
+    "lead": "Лид",
+    "conversation": "Переписка",
+    "proposal_sent": "КП отправлено",
+    "contract": "Договор",
+    "in_progress": "В работе",
+    "paid": "Оплачено"
+  }
+}

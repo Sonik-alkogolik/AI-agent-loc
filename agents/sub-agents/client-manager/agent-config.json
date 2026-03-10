@@ -1,0 +1,31 @@
+{
+  "id": "client-manager",
+  "name": "Client Manager",
+  "type": "specialized",
+  "specialty": "client_acquisition",
+  "description": "Персональный менеджер по поиску и управлению клиентами",
+  "version": "1.0.0",
+  "capabilities": [
+    "lead_search",
+    "proposal_generation",
+    "crm",
+    "follow_up_reminders",
+    "interaction_history"
+  ],
+  "settings": {
+    "developerInfo": "BaseMD/info/info_developer.md",
+    "templatesPath": "BaseMD/templates",
+    "dataPath": "BaseMD/data/clients.json",
+    "rate": 500,
+    "currency": "RUB",
+    "contactTelegram": "https://t.me/vveb_front"
+  },
+  "statusTypes": [
+    "lead",
+    "conversation",
+    "proposal_sent",
+    "contract",
+    "in_progress",
+    "paid"
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "title": "Разработка сайта на WordPress для строительной компании",
+    "description": "Нужно разработать корпоративный сайт для строительной фирмы. Дизайн есть в Figma. Требуется посадка на WordPress, настройка форм обратной связи, мультиязычность (RU/EN).",
+    "source": "fl.ru",
+    "budget": "30 000 ₽",
+    "type": "wordpress",
+    "url": "https://fl.ru/projects/123456",
+    "postedAt": "2026-03-10T16:44:18.499Z"
+  },
+  {
+    "title": "Доработка интернет-магазина на 1С-Bitrix",
+    "description": "Требуется доработать существующий интернет-магазин на Bitrix. Добавить новые свойства товаров, настроить импорт из 1С, исправить ошибки в корзине.",
+    "source": "freelance.ru",
+    "budget": "50 000 ₽",
+    "type": "bitrix",
+    "url": "https://freelance.ru/projects/789012",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Вёрстка лендинга из макета Figma",
+    "description": "Нужно сверстать одностраничный сайт (лендинг) из готового макета в Figma. HTML + CSS + JS. Адаптивная вёрстка под мобильные устройства.",
+    "source": "kwork.ru",
+    "budget": "15 000 ₽",
+    "type": "landing",
+    "url": "https://kwork.ru/project/345678",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Создание интернет-магазина с нуля",
+    "description": "Требуется разработать интернет-магазин с нуля. Каталог товаров, корзина, онлайн-оплата, интеграция с CRM. Предпочтительно WordPress + WooCommerce.",
+    "source": "weblancer.net",
+    "budget": "80 000 ₽",
+    "type": "shop",
+    "url": "https://weblancer.net/projects/901234",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Исправление ошибок на сайте WordPress",
+    "description": "После обновления плагинов сайт перестал загружаться. Нужно исправить ошибки, восстановить работоспособность, настроить кэширование.",
+    "source": "habr.com/freelance",
+    "budget": "10 000 ₽",
+    "type": "wordpress",
+    "url": "https://habr.com/freelance/task/567890",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Техническая поддержка сайта Bitrix",
+    "description": "Требуется специалист для постоянной технической поддержки сайта на Bitrix. Обновления, доработки, исправление ошибок, консультации.",
+    "source": "fl.ru",
+    "budget": "25 000 ₽/мес",
+    "type": "bitrix",
+    "url": "https://fl.ru/projects/234567",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Вёрстка email-рассылки",
+    "description": "Нужно сверстать адаптивный шаблон для email-рассылки. Должен корректно отображаться во всех почтовых клиентах.",
+    "source": "freelancehunt.com",
+    "budget": "5 000 ₽",
+    "type": "layout",
+    "url": "https://freelancehunt.com/project/678901",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  },
+  {
+    "title": "Интеграция CRM с сайтом WordPress",
+    "description": "Требуется интегрировать CRM-систему с сайтом на WordPress. Данные из форм должны передаваться в CRM, нужна обратная синхронизация.",
+    "source": "t.me",
+    "budget": "40 000 ₽",
+    "type": "wordpress",
+    "url": "https://t.me/freelance/12345",
+    "postedAt": "2026-03-10T16:44:18.500Z"
+  }
+]

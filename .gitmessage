@@ -1,0 +1,8 @@
+feat: Orders Manager + Telegram Bot Parser
+
+- Добавлен OrdersManager для хранения заказов в parse_order_{date}/{id}.json
+- Создана CRM-таблица для просмотра и управления заказами
+- Добавлен Telegram Bot Parser (парсинг через бота, не MTProto)
+- Обновлён ClientManagerAgent с интеграцией OrdersManager
+- Добавлены команды: npm run parse-leads, npm run crm, npm run parse-telegram
+- Документация: ORDERS.md, TELEGRAM_BOT.md
